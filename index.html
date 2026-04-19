@@ -2391,25 +2391,38 @@ function cmpFormatCurrencyBRL(value) {
 
 function cmpIsMarketClosed() {
   const now = new Date();
-  const brTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' }));
-  const day = brTime.getDay();
-  const hours = brTime.getHours();
-  const minutes = brTime.getMinutes();
+  const mxTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Mexico_City' }));
+  const day = mxTime.getDay();
+  const hours = mxTime.getHours();
+  const minutes = mxTime.getMinutes();
   const timeDecimal = hours + minutes / 60;
 
   if (day === 0 || day === 6) return true;
-  if (timeDecimal < 9 || timeDecimal >= 16.5) return true;
+  // Mexico FX market: 8:30–15:00 hora Ciudad de México
+  if (timeDecimal < 8.5 || timeDecimal >= 15) return true;
 
-  const month = String(brTime.getMonth() + 1).padStart(2, '0');
-  const dayOfMonth = String(brTime.getDate()).padStart(2, '0');
+  const month = String(mxTime.getMonth() + 1).padStart(2, '0');
+  const dayOfMonth = String(mxTime.getDate()).padStart(2, '0');
   const mmdd = month + '-' + dayOfMonth;
-  const year = brTime.getFullYear();
+  const year = mxTime.getFullYear();
 
-  const fixedHolidays = ['01-01','04-21','05-01','09-07','10-12','11-02','11-15','12-25'];
+  // Feriados fijos México
+  const fixedHolidays = [
+    '01-01', // Año Nuevo
+    '02-05', // Día de la Constitución
+    '03-21', // Natalicio de Benito Juárez
+    '05-01', // Día del Trabajo
+    '09-16', // Independencia
+    '11-02', // Día de Muertos (bancario)
+    '11-20', // Revolución Mexicana
+    '12-12', // Virgen de Guadalupe (bancario)
+    '12-25', // Navidad
+  ];
   if (fixedHolidays.includes(mmdd)) return true;
 
-  const variableHolidays2025 = ['03-03','03-04','04-18'];
-  const variableHolidays2026 = ['02-16','02-17','04-03','06-04'];
+  // Feriados variables (Semana Santa y otros)
+  const variableHolidays2025 = ['04-17', '04-18']; // Jueves y Viernes Santo 2025
+  const variableHolidays2026 = ['04-02', '04-03']; // Jueves y Viernes Santo 2026
 
   if (year === 2025 && variableHolidays2025.includes(mmdd)) return true;
   if (year === 2026 && variableHolidays2026.includes(mmdd)) return true;
